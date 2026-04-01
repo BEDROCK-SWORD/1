@@ -37,6 +37,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700;900&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* نفس الـ CSS كما هو في الكود السابق - لم يتغير شيء */
   :root {
     --bg: #0f0e0c;
     --bg2: #1a1815;
@@ -1010,6 +1011,7 @@
   <div class="header-top">
     <div class="logo">
       <div class="logo-icon" id="logo-icon-wrap">
+        <!-- الشعار الجديد - الصورة التي أرسلتها -->
         <img src="logo.png" alt="دفتر المشتريات" style="width:40px;height:40px;object-fit:cover;border-radius:10px;display:block;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23c9a84c%22/%3E%3Ctext x=%2250%22 y=%2270%22 text-anchor=%22middle%22 fill=%22%231a1400%22 font-size=%2248%22 font-family=%22Arial%22%3EG%3C/text%3E%3C/svg%3E'" />
       </div>
       <div class="logo-text">
@@ -1312,9 +1314,6 @@
 
 <script>
 // ===== Register Service Worker and Manifest =====
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW not registered'));
-}
 // Create manifest link dynamically
 const manifestBlob = document.getElementById('manifest-placeholder').textContent;
 const manifestURL = URL.createObjectURL(new Blob([manifestBlob], {type: 'application/json'}));
