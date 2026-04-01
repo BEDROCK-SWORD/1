@@ -971,4 +971,1096 @@
     box-shadow: var(--shadow);
   }
 
-  .
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ===== BTN ICON (header) ===== */
+  .btn-icon {
+    width: 36px; height: 36px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+  }
+
+  .btn-icon:hover { background: var(--surface2); border-color: var(--accent); }
+
+  /* ===== SCROLLBAR ===== */
+  @keyframes devBtnReveal {
+    0% { transform: scale(0) rotate(-180deg); opacity:0; }
+    60% { transform: scale(1.2) rotate(10deg); opacity:1; }
+    100% { transform: scale(1) rotate(0deg); opacity:1; }
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon" id="logo-icon-wrap">
+        <img src="logo.png" alt="دفتر المشتريات" style="width:40px;height:40px;object-fit:cover;border-radius:10px;display:block;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%23c9a84c%22/%3E%3Ctext x=%2250%22 y=%2270%22 text-anchor=%22middle%22 fill=%22%231a1400%22 font-size=%2248%22 font-family=%22Arial%22%3EG%3C/text%3E%3C/svg%3E'" />
+      </div>
+      <div class="logo-text">
+        <h1>دفتر المشتريات</h1>
+        <p id="header-subtitle">سجّل كل <span id="header-currency-word">دينار</span> تصرفه</p>
+      </div>
+    </div>
+    <button class="header-settings-btn" id="dev-settings-btn" onclick="showPage('settings')" title="الإعدادات" style="display:none">⚙️</button>
+  </div>
+  <nav class="nav-bar">
+    <button class="nav-tab active" onclick="showPage('today')">اليوم</button>
+    <button class="nav-tab" onclick="showPage('history')">السجل</button>
+    <button class="nav-tab" onclick="showPage('wishlist')">التمنيات</button>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- TODAY -->
+  <div id="page-today" class="page active">
+
+    <div class="date-bar">
+      <div class="date-info">
+        <div class="date-icon">📅</div>
+        <div class="date-texts">
+          <h2 id="today-date-ar">...</h2>
+          <p id="today-date-en">...</p>
+        </div>
+      </div>
+      <div class="countdown-badge">
+        <div class="label">إعادة تعيين بعد</div>
+        <div class="time" id="countdown">00:00:00</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">إجمالي اليوم</div>
+        <div class="stat-value" id="stat-total">0.00</div>
+        <div class="stat-sub" id="currency-label">دج</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🛍️</div>
+        <div class="stat-label">عدد المنتجات</div>
+        <div class="stat-value" id="stat-count">0</div>
+        <div class="stat-sub">منتج اليوم</div>
+      </div>
+      <div class="stat-card" id="stat-daily-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-label">الحد اليومي</div>
+        <div class="stat-value" id="stat-daily-remain">—</div>
+        <div class="stat-sub" id="stat-daily-sub">غير محدد</div>
+      </div>
+      <div class="stat-card" id="stat-monthly-card">
+        <div class="stat-icon">🗓️</div>
+        <div class="stat-label">الحد الشهري</div>
+        <div class="stat-value" id="stat-monthly-remain">—</div>
+        <div class="stat-sub" id="stat-monthly-sub">غير محدد</div>
+      </div>
+    </div>
+
+    <div class="budget-section" id="budget-bars-section" style="display:none">
+      <div class="section-title">📈 تقدم الميزانية</div>
+      <div id="daily-bar-wrap" class="budget-bar-wrap" style="display:none">
+        <div class="budget-bar-header">
+          <span>الحد اليومي</span>
+          <span id="daily-bar-label">0 / 0</span>
+        </div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" id="daily-bar-fill" style="width:0%"></div>
+        </div>
+        <div class="over-budget-msg" id="daily-over-msg" style="display:none"></div>
+      </div>
+      <div id="monthly-bar-wrap" class="budget-bar-wrap" style="display:none">
+        <div class="budget-bar-header">
+          <span>الحد الشهري</span>
+          <span id="monthly-bar-label">0 / 0</span>
+        </div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" id="monthly-bar-fill" style="width:0%"></div>
+        </div>
+        <div class="over-budget-msg" id="monthly-over-msg" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- حد الاستهلاك -->
+    <div class="add-card" id="limit-card">
+      <div class="section-title" style="margin-bottom:12px">🎯 حد الاستهلاك</div>
+
+      <!-- وضع الإدخال — يظهر لأول مرة أو عند الضغط على تعديل -->
+      <div id="limit-input-mode">
+        <div class="form-row">
+          <div class="form-group">
+            <label>الحد اليومي</label>
+            <input type="number" id="quick-daily" placeholder="غير محدد" step="0.01" min="0" inputmode="decimal" />
+          </div>
+          <div class="form-group">
+            <label>الحد الشهري</label>
+            <input type="number" id="quick-monthly" placeholder="غير محدد" step="0.01" min="0" inputmode="decimal" />
+          </div>
+          <div class="form-group" style="min-width:unset; flex:0; align-self:flex-end;">
+            <button class="btn-add" onclick="confirmLimit()" style="height:42px; padding:0 18px;">✔ حفظ</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- وضع العرض — يظهر بعد الحفظ -->
+      <div id="limit-display-mode" style="display:none">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div id="limit-display-daily" style="flex:1; min-width:120px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-size:10px; color:var(--text3); margin-bottom:3px;">الحد اليومي</div>
+              <div id="limit-val-daily" style="font-size:16px; font-weight:700; color:var(--accent);">—</div>
+            </div>
+            <button onclick="editLimit('daily')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;" title="تعديل">✏️</button>
+          </div>
+          <div id="limit-display-monthly" style="flex:1; min-width:120px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:10px 14px; display:flex; align-items:center; justify-content:space-between;">
+            <div>
+              <div style="font-size:10px; color:var(--text3); margin-bottom:3px;">الحد الشهري</div>
+              <div id="limit-val-monthly" style="font-size:16px; font-weight:700; color:var(--accent);">—</div>
+            </div>
+            <button onclick="editLimit('monthly')" style="background:none;border:none;cursor:pointer;font-size:16px;color:var(--text3);padding:4px;" title="تعديل">✏️</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="add-card">
+      <div class="section-title" style="margin-bottom:12px">✒️ إضافة منتج</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>اسم المنتج</label>
+          <input type="text" id="inp-name" placeholder="مثال: قهوة، كتاب..." />
+        </div>
+        <div class="form-group">
+          <label>السعر</label>
+          <input type="number" id="inp-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+        </div>
+        <div class="form-group" style="min-width:unset; flex:0">
+          <label>&nbsp;</label>
+          <button class="btn-add" onclick="addItem()">+ إضافة</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="items-section">
+      <div class="items-header">
+        <div class="section-title" style="margin:0">🛒 مشترياتي اليوم</div>
+        <button class="btn-icon" onclick="clearTodayItems()" title="مسح الكل" style="color:var(--red-light)">🗑️</button>
+      </div>
+      <div class="items-list" id="items-list">
+        <div class="empty-state">
+          <div class="emoji">📝</div>
+          <p>لا توجد مشتريات بعد — ابدأ بإضافة منتج</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="page-history" class="page">
+    <div id="history-container"></div>
+  </div>
+
+  <!-- WISHLIST -->
+  <div id="page-wishlist" class="page">
+    <div class="add-wish-form">
+      <div class="section-title" style="margin-bottom:12px">✨ إضافة تمنية</div>
+      <div class="form-row">
+        <div class="form-group" style="flex:2">
+          <label>اسم المنتج</label>
+          <input type="text" id="wish-name" placeholder="ما الذي تتمنى شراءه؟" />
+        </div>
+        <div class="form-group">
+          <label>السعر المتوقع</label>
+          <input type="number" id="wish-price" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:8px">
+        <div class="form-group" style="flex:2">
+          <label>وصف (اختياري)</label>
+          <input type="text" id="wish-desc" placeholder="لماذا تريد هذا المنتج؟" />
+        </div>
+        <div class="form-group" style="flex:1; min-width:140px">
+          <label>صورة من الجهاز (اختياري)</label>
+          <div class="img-upload-area" id="upload-area">
+            <input type="file" accept="image/*" id="wish-img-file" onchange="handleImgUpload(this)" />
+            <div id="upload-preview-wrap">
+              <div class="upload-icon">📷</div>
+              <div class="upload-text">اضغط لرفع صورة</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="min-width:unset; flex:0">
+          <label>&nbsp;</label>
+          <button class="btn-add" onclick="addWish()">+ إضافة</button>
+        </div>
+      </div>
+    </div>
+    <div class="wishlist-grid" id="wishlist-grid">
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="emoji">🌟</div>
+        <p>قائمة تمنياتك فارغة — أضف ما تحلم باقتنائه</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="page-settings" class="page">
+    <div class="settings-grid">
+
+      <div class="settings-card">
+        <h3>💰 العملة</h3>
+        <div class="setting-row">
+          <div class="setting-label">العملة</div>
+          <select class="setting-input" id="set-currency">
+            <option value="دج">دينار جزائري (دج)</option>
+            <option value="ريال">ريال سعودي</option>
+            <option value="درهم">درهم إماراتي</option>
+            <option value="د.ك">دينار كويتي</option>
+            <option value="د.ل">دينار ليبي</option>
+            <option value="جنيه">جنيه مصري</option>
+            <option value="$">دولار أمريكي ($)</option>
+            <option value="€">يورو (€)</option>
+          </select>
+        </div>
+        <button class="btn-save-settings" onclick="saveSettings()">💾 حفظ</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>🎨 الألوان</h3>
+        <div class="color-grid">
+          <div class="color-row">
+            <label>خلفية</label>
+            <input type="color" id="col-bg" value="#0f0e0c" oninput="liveColor('--bg', this.value)" />
+          </div>
+          <div class="color-row">
+            <label>الواجهة</label>
+            <input type="color" id="col-surface" value="#2a2520" oninput="liveColor('--surface', this.value)" />
+          </div>
+          <div class="color-row">
+            <label>اللون الرئيسي</label>
+            <input type="color" id="col-accent" value="#c9a84c" oninput="liveColor('--accent', this.value)" />
+          </div>
+          <div class="color-row">
+            <label>النص</label>
+            <input type="color" id="col-text" value="#e8dcc8" oninput="liveColor('--text', this.value)" />
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px; color:var(--text3); margin-bottom:7px">ثيمات جاهزة</div>
+          <div class="bg-presets" id="theme-presets"></div>
+        </div>
+        <button class="btn-save-settings" onclick="saveSettings()">💾 حفظ الألوان</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>🔤 الخط</h3>
+        <div class="font-selector" id="font-selector">
+          <div class="font-option selected" style="font-family:'Cairo',sans-serif" onclick="selectFont('Cairo')" data-font="Cairo">Cairo — كيرو</div>
+          <div class="font-option" style="font-family:'Amiri',serif" onclick="selectFont('Amiri')" data-font="Amiri">Amiri — أميري</div>
+          <div class="font-option" style="font-family:'Scheherazade New',serif" onclick="selectFont('Scheherazade New')" data-font="Scheherazade New">Scheherazade — شهرزاد</div>
+        </div>
+        <button class="btn-save-settings" style="margin-top:12px" onclick="saveSettings()">💾 حفظ الخط</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>🌅 خلفية مخصصة</h3>
+        <div class="color-row" style="margin-bottom:10px">
+          <label>لون خلفية مخصص</label>
+          <input type="color" id="col-bg2" value="#0f0e0c" oninput="liveColor('--bg', this.value); document.getElementById('col-bg').value=this.value" />
+        </div>
+        <div style="font-size:11px; color:var(--text3); margin-bottom:7px">ألوان جاهزة:</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:7px" id="bg-presets-grid"></div>
+        <button class="btn-save-settings" style="margin-top:12px" onclick="saveSettings()">💾 حفظ</button>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<div class="dev-credit">تم التطوير بواسطة <span>GLITCH</span> — دفتر المشتريات v2.0</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">تفاصيل اليوم</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Register Service Worker and Manifest =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(e => console.log('SW not registered'));
+}
+// Create manifest link dynamically
+const manifestBlob = document.getElementById('manifest-placeholder').textContent;
+const manifestURL = URL.createObjectURL(new Blob([manifestBlob], {type: 'application/json'}));
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+
+// ===== CURRENCY WORDS MAP =====
+const CURRENCY_WORDS = {
+  'دج': 'دينار',
+  'ريال': 'ريال',
+  'درهم': 'درهم',
+  'د.ك': 'دينار',
+  'د.ل': 'دينار',
+  'جنيه': 'جنيه',
+  '$': 'دولار',
+  '€': 'يورو',
+};
+
+// ===== DATA =====
+const DB = {
+  get: (k, d) => { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : d; } catch { return d; } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+function todayKey() {
+  const d = new Date();
+  return `day_${d.getFullYear()}_${d.getMonth()+1}_${d.getDate()}`;
+}
+
+let settings = DB.get('settings', {
+  dailyLimit: 0,
+  monthlyLimit: 0,
+  currency: 'دج',
+  font: 'Cairo',
+  colors: { bg: '#0f0e0c', surface: '#2a2520', accent: '#c9a84c', text: '#e8dcc8' }
+});
+
+function getTodayItems() { return DB.get(todayKey(), []); }
+function saveTodayItems(i) { DB.set(todayKey(), i); }
+
+function getAllDayKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('day_')) keys.push(k);
+  }
+  return keys.sort().reverse();
+}
+
+function getMonthlyTotal() {
+  let total = 0;
+  const now = new Date();
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('day_')) {
+      const parts = k.split('_');
+      if (parseInt(parts[1]) === now.getFullYear() && parseInt(parts[2]) === now.getMonth()+1) {
+        DB.get(k, []).forEach(it => total += parseFloat(it.price)||0);
+      }
+    }
+  }
+  return total;
+}
+
+// ===== COUNTDOWN =====
+function updateCountdown() {
+  const now = new Date();
+  const midnight = new Date(now); midnight.setHours(24,0,0,0);
+  const diff = midnight - now;
+  const h = Math.floor(diff/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  document.getElementById('countdown').textContent =
+    String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+setInterval(updateCountdown, 1000);
+updateCountdown();
+
+// ===== DATE =====
+function updateDateDisplay() {
+  const now = new Date();
+  const arDays = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const arMonths = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('today-date-ar').textContent = `${arDays[now.getDay()]} ${now.getDate()} ${arMonths[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('today-date-en').textContent = now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+}
+
+// ===== UPDATE CURRENCY WORD IN HEADER =====
+function updateHeaderCurrency() {
+  const word = CURRENCY_WORDS[settings.currency] || settings.currency;
+  document.getElementById('header-currency-word').textContent = word;
+}
+
+// ===== RENDER TODAY =====
+function renderToday() {
+  const items = getTodayItems();
+  const total = items.reduce((s,it) => s+(parseFloat(it.price)||0), 0);
+  const cur = settings.currency;
+  const monthly = getMonthlyTotal();
+
+  document.getElementById('stat-total').textContent = total.toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2});
+  document.getElementById('stat-count').textContent = items.length;
+  document.querySelectorAll('#currency-label').forEach(el => el.textContent = cur);
+
+  const dl = parseFloat(settings.dailyLimit)||0;
+  const ml = parseFloat(settings.monthlyLimit)||0;
+
+  // Daily stat card
+  const dailyRemEl = document.getElementById('stat-daily-remain');
+  const dailySubEl = document.getElementById('stat-daily-sub');
+  if (dl > 0) {
+    const rem = dl - total;
+    dailyRemEl.textContent = Math.abs(rem).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+cur;
+    if (rem < 0) {
+      dailyRemEl.className = 'stat-value danger';
+      dailySubEl.textContent = `تجاوزت بـ ${Math.abs(rem).toFixed(2)} ${cur}`;
+      document.getElementById('stat-daily-card').classList.add('danger');
+    } else {
+      dailyRemEl.className = 'stat-value';
+      dailySubEl.textContent = `متبقي من ${dl} ${cur}`;
+      document.getElementById('stat-daily-card').classList.remove('danger');
+    }
+  } else {
+    dailyRemEl.textContent = '—';
+    dailySubEl.textContent = 'غير محدد';
+    document.getElementById('stat-daily-card').classList.remove('danger');
+  }
+
+  // Monthly stat card
+  const monthlyRemEl = document.getElementById('stat-monthly-remain');
+  const monthlySubEl = document.getElementById('stat-monthly-sub');
+  if (ml > 0) {
+    const rem = ml - monthly;
+    monthlyRemEl.textContent = Math.abs(rem).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})+' '+cur;
+    if (rem < 0) {
+      monthlyRemEl.className = 'stat-value danger';
+      monthlySubEl.textContent = `تجاوزت الشهري بـ ${Math.abs(rem).toFixed(2)} ${cur}`;
+      document.getElementById('stat-monthly-card').classList.add('danger');
+    } else {
+      monthlyRemEl.className = 'stat-value';
+      monthlySubEl.textContent = `متبقي من ${ml} ${cur} (مجموع: ${monthly.toFixed(2)})`;
+      document.getElementById('stat-monthly-card').classList.remove('danger');
+    }
+  } else {
+    monthlyRemEl.textContent = '—';
+    monthlySubEl.textContent = 'غير محدد';
+    document.getElementById('stat-monthly-card').classList.remove('danger');
+  }
+
+  // Budget bars
+  const hasBars = dl > 0 || ml > 0;
+  document.getElementById('budget-bars-section').style.display = hasBars ? '' : 'none';
+
+  if (dl > 0) {
+    const pct = Math.min((total/dl)*100, 100);
+    const fill = document.getElementById('daily-bar-fill');
+    fill.style.width = pct+'%';
+    fill.className = 'budget-bar-fill'+(pct>=100?' danger':pct>=80?' warn':'');
+    document.getElementById('daily-bar-label').textContent = `${total.toFixed(2)} / ${dl} ${cur}`;
+    document.getElementById('daily-bar-wrap').style.display = '';
+    const om = document.getElementById('daily-over-msg');
+    if (total > dl) { om.style.display=''; om.textContent=`⚠️ تجاوزت الحد اليومي بـ ${(total-dl).toFixed(2)} ${cur}`; }
+    else { om.style.display='none'; }
+  } else { document.getElementById('daily-bar-wrap').style.display='none'; }
+
+  if (ml > 0) {
+    const pct = Math.min((monthly/ml)*100, 100);
+    const fill = document.getElementById('monthly-bar-fill');
+    fill.style.width = pct+'%';
+    fill.className = 'budget-bar-fill'+(pct>=100?' danger':pct>=80?' warn':'');
+    document.getElementById('monthly-bar-label').textContent = `${monthly.toFixed(2)} / ${ml} ${cur}`;
+    document.getElementById('monthly-bar-wrap').style.display = '';
+    const om = document.getElementById('monthly-over-msg');
+    if (monthly > ml) { om.style.display=''; om.textContent=`⚠️ تجاوزت الشهري بـ ${(monthly-ml).toFixed(2)} ${cur}`; }
+    else { om.style.display='none'; }
+  } else { document.getElementById('monthly-bar-wrap').style.display='none'; }
+
+  // Items list
+  const listEl = document.getElementById('items-list');
+  syncQuickLimitInputs();
+  if (items.length === 0) {
+    listEl.innerHTML = `<div class="empty-state"><div class="emoji">📝</div><p>لا توجد مشتريات بعد — ابدأ بإضافة منتج</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = items.map((it,i) => `
+    <div class="item-row" id="item-${i}">
+      <div class="item-num">${i+1}</div>
+      <div class="item-name" id="name-${i}">${escHtml(it.name)}</div>
+      <div class="item-price" id="price-${i}">${parseFloat(it.price).toLocaleString('ar-SA',{minimumFractionDigits:2,maximumFractionDigits:2})} ${cur}</div>
+      <div class="item-time">${it.time||''}</div>
+      <div class="item-actions">
+        <button class="btn-sm edit" onclick="editItem(${i})" title="تعديل">✏️</button>
+        <button class="btn-sm del" onclick="deleteItem(${i})" title="حذف">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== ADD / EDIT / DELETE ITEMS =====
+function addItem() {
+  const name = document.getElementById('inp-name').value.trim();
+  const price = parseFloat(document.getElementById('inp-price').value);
+  if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
+  if (isNaN(price)||price<0) { showToast('⚠️ أدخل سعراً صحيحاً'); return; }
+  const items = getTodayItems();
+  const now = new Date();
+  items.push({ name, price, time: now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}) });
+  saveTodayItems(items);
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-price').value = '';
+  renderToday();
+  playSound('add');
+  // Check if over limit after adding
+  const dl = parseFloat(settings.dailyLimit)||0;
+  const newTotal = getTodayItems().reduce((s,it)=>s+(parseFloat(it.price)||0),0);
+  if (dl > 0 && newTotal > dl) playSound('warn');
+  showToast('✅ تم إضافة '+name);
+}
+
+function deleteItem(i) {
+  const items = getTodayItems();
+  const name = items[i].name;
+  items.splice(i,1);
+  saveTodayItems(items);
+  renderToday();
+  playSound('delete');
+  showToast('🗑️ تم حذف '+name);
+}
+
+function editItem(i) {
+  const items = getTodayItems();
+  const row = document.getElementById(`item-${i}`);
+  const nameEl = document.getElementById(`name-${i}`);
+  const priceEl = document.getElementById(`price-${i}`);
+  nameEl.contentEditable='true'; nameEl.className='item-name editing'; nameEl.focus();
+  priceEl.innerHTML=`<input class="item-price editing" id="price-inp-${i}" type="number" value="${items[i].price}" step="0.01" min="0" inputmode="decimal" />`;
+  row.querySelector('.item-actions').innerHTML=`<button class="btn-sm save" onclick="saveEdit(${i})">✅</button>`;
+}
+
+function saveEdit(i) {
+  const items = getTodayItems();
+  const nameEl = document.getElementById(`name-${i}`);
+  const priceInp = document.getElementById(`price-inp-${i}`);
+  const newName = nameEl.textContent.trim();
+  const newPrice = parseFloat(priceInp.value);
+  if (!newName||isNaN(newPrice)) { showToast('⚠️ بيانات غير صحيحة'); return; }
+  items[i].name = newName; items[i].price = newPrice;
+  saveTodayItems(items);
+  renderToday();
+  playSound('save');
+  showToast('✅ تم الحفظ');
+}
+
+function clearTodayItems() {
+  if (!confirm('هل أنت متأكد من حذف جميع مشتريات اليوم؟')) return;
+  saveTodayItems([]);
+  renderToday();
+  showToast('🗑️ تم مسح مشتريات اليوم');
+}
+
+// ===== HISTORY =====
+function renderHistory() {
+  const container = document.getElementById('history-container');
+  const dayKeys = getAllDayKeys();
+  if (dayKeys.length===0) {
+    container.innerHTML=`<div class="empty-state" style="padding:50px"><div class="emoji">📚</div><p>لا يوجد سجل بعد</p></div>`;
+    return;
+  }
+
+  const months = {};
+  dayKeys.forEach(key => {
+    const parts = key.split('_');
+    const mk = `${parts[1]}_${parts[2]}`;
+    if (!months[mk]) months[mk]=[];
+    months[mk].push(key);
+  });
+
+  const arMonths=['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const cur = settings.currency;
+  const dl = parseFloat(settings.dailyLimit)||0;
+  let html='';
+
+  Object.keys(months).sort().reverse().forEach(mk => {
+    const [yr,mo] = mk.split('_');
+    const dks = months[mk].sort().reverse();
+    let monthTotal = 0;
+    dks.forEach(dk => DB.get(dk,[]).forEach(it => monthTotal += parseFloat(it.price)||0));
+
+    const weeks={};
+    dks.forEach(dk => {
+      const d=parseInt(dk.split('_')[3]);
+      const wn=Math.ceil(d/7);
+      if(!weeks[wn]) weeks[wn]=[];
+      weeks[wn].push(dk);
+    });
+
+    let weeksHtml='';
+    Object.keys(weeks).sort((a,b)=>b-a).forEach(wn => {
+      const daysHtml = weeks[wn].map(dk => {
+        const parts=dk.split('_');
+        const d=parseInt(parts[3]);
+        const items=DB.get(dk,[]);
+        const dayTotal=items.reduce((s,it)=>s+(parseFloat(it.price)||0),0);
+        const isOver=dl>0&&dayTotal>dl;
+        const arDay=getArDayName(new Date(parseInt(yr),parseInt(mo)-1,d).getDay());
+        return `<div class="day-row ${isOver?'over-daily':''}" onclick="showDayModal('${dk}')">
+          <div><div class="day-name">${arDay} ${d}/${mo}</div><div class="day-items">${items.length} منتج</div></div>
+          <div class="day-total ${isOver?'danger':''}">${dayTotal.toLocaleString('ar-SA',{minimumFractionDigits:2})} ${cur}</div>
+        </div>`;
+      }).join('');
+      weeksHtml+=`<div class="week-group"><div class="week-label">الأسبوع ${wn}</div>${daysHtml}</div>`;
+    });
+
+    html+=`<div class="history-month">
+      <div class="month-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        <h3>📅 ${arMonths[parseInt(mo)]} ${yr}</h3>
+        <div class="month-total">${monthTotal.toLocaleString('ar-SA',{minimumFractionDigits:2})} ${cur}</div>
+      </div>
+      <div class="month-body">${weeksHtml}</div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function getArDayName(d) { return ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'][d]; }
+
+function showDayModal(dk) {
+  const parts=dk.split('_');
+  const d=parts[3],mo=parts[2],yr=parts[1];
+  const items=DB.get(dk,[]);
+  const total=items.reduce((s,it)=>s+(parseFloat(it.price)||0),0);
+  const cur=settings.currency;
+  const arMonths=['','يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  document.getElementById('modal-title').textContent=`${d} ${arMonths[parseInt(mo)]} ${yr}`;
+  let body=items.length===0?`<div class="empty-state"><div class="emoji">📭</div><p>لا توجد مشتريات في هذا اليوم</p></div>`:
+    items.map((it,i)=>`<div class="modal-item-row"><span style="color:var(--text2)">${i+1}. ${escHtml(it.name)}</span><span style="color:var(--accent);font-weight:700">${parseFloat(it.price).toFixed(2)} ${cur}</span></div>`).join('');
+  body+=`<div class="modal-total"><div class="val">${total.toLocaleString('ar-SA',{minimumFractionDigits:2})} ${cur}</div><div class="lbl">${items.length} منتج — إجمالي اليوم</div></div>`;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('day-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('day-modal').classList.remove('open'); }
+
+// ===== WISHLIST WITH LOCAL IMAGE =====
+let pendingWishImg = null; // base64
+
+function handleImgUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    pendingWishImg = e.target.result;
+    const wrap = document.getElementById('upload-preview-wrap');
+    wrap.innerHTML = `<img src="${pendingWishImg}" class="img-preview" /><div class="upload-text">تم اختيار الصورة ✅</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function getWishes() { return DB.get('wishes', []); }
+function saveWishes(w) { DB.set('wishes', w); }
+
+function renderWishlist() {
+  const wishes = getWishes();
+  const grid = document.getElementById('wishlist-grid');
+  const cur = settings.currency;
+  if (wishes.length===0) {
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="emoji">🌟</div><p>قائمة تمنياتك فارغة — أضف ما تحلم باقتنائه</p></div>`;
+    return;
+  }
+  grid.innerHTML = wishes.map((w,i) => `
+    <div class="wish-card">
+      ${w.img
+        ? `<img class="wish-img" src="${w.img}" alt="${escHtml(w.name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="wish-img-placeholder" style="display:none">🛍️</div>`
+        : `<div class="wish-img-placeholder">🛍️</div>`}
+      <div class="wish-body">
+        <div class="wish-name">${escHtml(w.name)}</div>
+        <div class="wish-price">${parseFloat(w.price||0).toLocaleString('ar-SA',{minimumFractionDigits:2})} ${cur}</div>
+        ${w.desc?`<div class="wish-desc">${escHtml(w.desc)}</div>`:''}
+        <div class="wish-actions">
+          <button class="btn-wish-del" onclick="deleteWish(${i})">🗑️ حذف</button>
+          <button class="btn-wish-buy" onclick="buyWish(${i})">🛒 اشتريته!</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addWish() {
+  const name = document.getElementById('wish-name').value.trim();
+  const price = parseFloat(document.getElementById('wish-price').value)||0;
+  const desc = document.getElementById('wish-desc').value.trim();
+  if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
+  const wishes = getWishes();
+  wishes.push({ name, price, desc, img: pendingWishImg || '' });
+  saveWishes(wishes);
+  // reset form
+  document.getElementById('wish-name').value='';
+  document.getElementById('wish-price').value='';
+  document.getElementById('wish-desc').value='';
+  document.getElementById('wish-img-file').value='';
+  pendingWishImg = null;
+  document.getElementById('upload-preview-wrap').innerHTML=`<div class="upload-icon">📷</div><div class="upload-text">اضغط لرفع صورة</div>`;
+  renderWishlist();
+  playSound('wish');
+  showToast('✨ تمت الإضافة إلى قائمة التمنيات');
+}
+
+function deleteWish(i) {
+  const wishes=getWishes(); wishes.splice(i,1); saveWishes(wishes); renderWishlist(); playSound('delete'); showToast('🗑️ تم الحذف');
+}
+
+function buyWish(i) {
+  const wishes=getWishes(); const w=wishes[i];
+  const items=getTodayItems(); const now=new Date();
+  items.push({name:w.name,price:w.price,time:now.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})});
+  saveTodayItems(items);
+  wishes.splice(i,1); saveWishes(wishes);
+  renderWishlist();
+  if(document.getElementById('page-today').classList.contains('active')) renderToday();
+  playSound('buy');
+  showToast(`✅ تم نقل "${w.name}" إلى مشتريات اليوم`);
+}
+
+// ===== QUICK LIMIT (in today page) =====
+function confirmLimit() {
+  const dl = parseFloat(document.getElementById('quick-daily').value) || 0;
+  const ml = parseFloat(document.getElementById('quick-monthly').value) || 0;
+  settings.dailyLimit = dl;
+  settings.monthlyLimit = ml;
+  DB.set('settings', settings);
+  switchToLimitDisplay();
+  renderToday();
+  playSound('save');
+  showToast('✅ تم حفظ حد الاستهلاك');
+}
+
+function editLimit(which) {
+  // Switch back to input mode and focus the right field
+  switchToLimitInput();
+  if (which === 'daily') {
+    document.getElementById('quick-daily').focus();
+  } else {
+    document.getElementById('quick-monthly').focus();
+  }
+}
+
+function switchToLimitDisplay() {
+  const cur = settings.currency || 'دج';
+  const dl = settings.dailyLimit || 0;
+  const ml = settings.monthlyLimit || 0;
+  document.getElementById('limit-input-mode').style.display = 'none';
+  document.getElementById('limit-display-mode').style.display = '';
+  document.getElementById('limit-val-daily').textContent = dl > 0 ? dl.toLocaleString('ar-SA', {minimumFractionDigits:2}) + ' ' + cur : '—';
+  document.getElementById('limit-val-monthly').textContent = ml > 0 ? ml.toLocaleString('ar-SA', {minimumFractionDigits:2}) + ' ' + cur : '—';
+  // Color red if already over
+  const total = getTodayItems().reduce((s,it)=>s+(parseFloat(it.price)||0),0);
+  const monthly = getMonthlyTotal();
+  document.getElementById('limit-val-daily').style.color = (dl > 0 && total > dl) ? 'var(--red-light)' : 'var(--accent)';
+  document.getElementById('limit-val-monthly').style.color = (ml > 0 && monthly > ml) ? 'var(--red-light)' : 'var(--accent)';
+}
+
+function switchToLimitInput() {
+  document.getElementById('limit-input-mode').style.display = '';
+  document.getElementById('limit-display-mode').style.display = 'none';
+  document.getElementById('quick-daily').value = settings.dailyLimit || '';
+  document.getElementById('quick-monthly').value = settings.monthlyLimit || '';
+}
+
+function syncQuickLimitInputs() {
+  // If limits are already set, show display mode; else show input mode
+  const hasLimits = settings.dailyLimit > 0 || settings.monthlyLimit > 0;
+  if (hasLimits) {
+    switchToLimitDisplay();
+  } else {
+    switchToLimitInput();
+  }
+}
+
+// ===== SETTINGS =====
+function loadSettingsUI() {
+  document.getElementById('set-currency').value = settings.currency||'دج';
+  const c = settings.colors||{};
+  if(c.bg){document.getElementById('col-bg').value=c.bg;document.getElementById('col-bg2').value=c.bg;}
+  if(c.surface) document.getElementById('col-surface').value=c.surface;
+  if(c.accent) document.getElementById('col-accent').value=c.accent;
+  if(c.text) document.getElementById('col-text').value=c.text;
+  document.querySelectorAll('.font-option').forEach(el=>el.classList.toggle('selected',el.dataset.font===settings.font));
+}
+
+function saveSettings() {
+  settings.currency = document.getElementById('set-currency').value;
+  settings.colors = {
+    bg: document.getElementById('col-bg').value,
+    surface: document.getElementById('col-surface').value,
+    accent: document.getElementById('col-accent').value,
+    text: document.getElementById('col-text').value,
+  };
+  DB.set('settings', settings);
+  applyTheme();
+  renderToday();
+  updateHeaderCurrency();
+  playSound('save');
+  showToast('✅ تم حفظ الإعدادات');
+}
+
+function selectFont(f) {
+  settings.font = f;
+  document.querySelectorAll('.font-option').forEach(el=>el.classList.toggle('selected',el.dataset.font===f));
+  document.documentElement.style.setProperty('--font-body',`'${f}', sans-serif`);
+}
+
+function liveColor(variable, value) {
+  document.documentElement.style.setProperty(variable, value);
+  if(!settings.colors) settings.colors={};
+  const map={'--bg':'bg','--surface':'surface','--accent':'accent','--text':'text'};
+  if(map[variable]) settings.colors[map[variable]]=value;
+}
+
+function applyTheme() {
+  const c = settings.colors||{};
+  if(c.bg){document.documentElement.style.setProperty('--bg',c.bg);document.documentElement.style.setProperty('--bg2',c.bg);}
+  if(c.surface){document.documentElement.style.setProperty('--surface',c.surface);document.documentElement.style.setProperty('--surface2',c.surface);}
+  if(c.accent){document.documentElement.style.setProperty('--accent',c.accent);document.documentElement.style.setProperty('--accent2',c.accent);}
+  if(c.text) document.documentElement.style.setProperty('--text',c.text);
+  if(settings.font) document.documentElement.style.setProperty('--font-body',`'${settings.font}', sans-serif`);
+}
+
+const themes = [
+  {name:'ذهبي داكن',bg:'#0f0e0c',surface:'#2a2520',accent:'#c9a84c',text:'#e8dcc8'},
+  {name:'أزرق بارد',bg:'#0a0f1a',surface:'#151f30',accent:'#4a9eff',text:'#c8d8f0'},
+  {name:'أخضر زمردي',bg:'#061410',surface:'#0d2018',accent:'#2ecc71',text:'#c8f0d8'},
+  {name:'أحمر ياقوتي',bg:'#120808',surface:'#201010',accent:'#e74c3c',text:'#f0c8c8'},
+  {name:'بنفسجي',bg:'#0d0a15',surface:'#1a1428',accent:'#9b59b6',text:'#d8c8f0'},
+  {name:'وردي',bg:'#150a10',surface:'#251520',accent:'#e91e8c',text:'#f0c8e0'},
+  {name:'برتقالي',bg:'#120a04',surface:'#201408',accent:'#e67e22',text:'#f0d8c8'},
+  {name:'فيروزي',bg:'#041210',surface:'#081e1c',accent:'#1abc9c',text:'#c8f0ee'},
+];
+
+function buildThemePresets() {
+  document.getElementById('theme-presets').innerHTML = themes.map((t,i)=>`
+    <div class="bg-preset" title="${t.name}" style="background:linear-gradient(135deg,${t.bg},${t.surface});border-color:${t.accent}" onclick="applyPreset(${i})"></div>
+  `).join('');
+}
+
+function applyPreset(i) {
+  const t=themes[i];
+  settings.colors={bg:t.bg,surface:t.surface,accent:t.accent,text:t.text};
+  ['--bg','--bg2'].forEach(v=>document.documentElement.style.setProperty(v,t.bg));
+  ['--surface','--surface2'].forEach(v=>document.documentElement.style.setProperty(v,t.surface));
+  ['--accent','--accent2'].forEach(v=>document.documentElement.style.setProperty(v,t.accent));
+  document.documentElement.style.setProperty('--text',t.text);
+  document.getElementById('col-bg').value=t.bg;
+  document.getElementById('col-bg2').value=t.bg;
+  document.getElementById('col-surface').value=t.surface;
+  document.getElementById('col-accent').value=t.accent;
+  document.getElementById('col-text').value=t.text;
+  DB.set('settings',settings);
+  showToast(`🎨 تم تطبيق ثيم ${t.name}`);
+}
+
+const bgColors=[
+  {name:'أسود فحمي',color:'#0a0a0a'},
+  {name:'أزرق ليلي',color:'#050a14'},
+  {name:'بني دافئ',color:'#100a06'},
+  {name:'أخضر غابة',color:'#040e08'},
+];
+
+function buildBgPresets() {
+  document.getElementById('bg-presets-grid').innerHTML=bgColors.map(b=>`
+    <div style="background:${b.color};height:40px;border-radius:7px;cursor:pointer;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--text3);transition:border-color 0.2s"
+      title="${b.name}"
+      onmouseover="this.style.borderColor='var(--accent)'"
+      onmouseout="this.style.borderColor='var(--border)'"
+      onclick="liveColor('--bg','${b.color}');document.getElementById('col-bg').value='${b.color}';document.getElementById('col-bg2').value='${b.color}'">
+      ${b.name}
+    </div>
+  `).join('');
+}
+
+// ===== NAVIGATION =====
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const tabs={today:0,history:1,wishlist:2};
+  if(tabs[page]!==undefined) document.querySelectorAll('.nav-tab')[tabs[page]]?.classList.add('active');
+  playSound('nav');
+  if(page==='history') renderHistory();
+  if(page==='wishlist') renderWishlist();
+  if(page==='settings') loadSettingsUI();
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ===== KEYBOARD =====
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    if(document.activeElement===document.getElementById('inp-name')||document.activeElement===document.getElementById('inp-price')) addItem();
+  }
+  if(e.key==='Escape') closeModal();
+});
+
+document.getElementById('day-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ===== SOUND SYSTEM =====
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  return audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+
+    if (type === 'add') {
+      // نغمة إضافة ناجحة — صوت "كاشير / دينغ"
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc1.connect(gain); osc2.connect(gain); gain.connect(ctx.destination);
+      osc1.type = 'sine'; osc1.frequency.setValueAtTime(880, now); osc1.frequency.linearRampToValueAtTime(1100, now+0.08);
+      osc2.type = 'sine'; osc2.frequency.setValueAtTime(1320, now+0.06);
+      gain.gain.setValueAtTime(0.18, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.35);
+      osc1.start(now); osc1.stop(now+0.35);
+      osc2.start(now+0.06); osc2.stop(now+0.35);
+
+    } else if (type === 'delete') {
+      // صوت حذف — نبرة هابطة
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(440, now); osc.frequency.linearRampToValueAtTime(180, now+0.25);
+      gain.gain.setValueAtTime(0.12, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.28);
+      osc.start(now); osc.stop(now+0.3);
+
+    } else if (type === 'save') {
+      // صوت حفظ — نغمتان صاعدتان
+      [0, 0.1].forEach((delay, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(i===0 ? 660 : 990, now+delay);
+        gain.gain.setValueAtTime(0.15, now+delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now+delay+0.3);
+        osc.start(now+delay); osc.stop(now+delay+0.32);
+      });
+
+    } else if (type === 'warn') {
+      // تحذير تجاوز الحد — نبضتان سريعتان
+      [0, 0.18].forEach(delay => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'square'; osc.frequency.setValueAtTime(320, now+delay);
+        gain.gain.setValueAtTime(0.10, now+delay); gain.gain.exponentialRampToValueAtTime(0.001, now+delay+0.15);
+        osc.start(now+delay); osc.stop(now+delay+0.17);
+      });
+
+    } else if (type === 'wish') {
+      // صوت إضافة تمنية — نغمة رومانسية ✨
+      [0, 0.12, 0.24].forEach((delay, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine';
+        const freqs = [523, 659, 784];
+        osc.frequency.setValueAtTime(freqs[i], now+delay);
+        gain.gain.setValueAtTime(0.13, now+delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now+delay+0.4);
+        osc.start(now+delay); osc.stop(now+delay+0.42);
+      });
+
+    } else if (type === 'nav') {
+      // صوت تنقل بين الصفحات — نقرة خفيفة
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(700, now+0.05);
+      gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.001, now+0.12);
+      osc.start(now); osc.stop(now+0.13);
+
+    } else if (type === 'buy') {
+      // صوت "اشتريته" — احتفالي 🎉
+      const notes = [523, 659, 784, 1047];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now + i*0.09);
+        gain.gain.setValueAtTime(0.14, now+i*0.09);
+        gain.gain.exponentialRampToValueAtTime(0.001, now+i*0.09+0.35);
+        osc.start(now+i*0.09); osc.stop(now+i*0.09+0.37);
+      });
+    }
+  } catch(e) {}
+}
+
+// ===== SECRET DEV CODE =====
+const SECRET_CODE = '/effect @s night_vision 999999 5 true';
+let secretBuffer = '';
+
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'wish-name') {
+    const val = e.target.value;
+    if (val === SECRET_CODE) {
+      e.target.value = '';
+      secretBuffer = '';
+      const btn = document.getElementById('dev-settings-btn');
+      const isVisible = btn.style.display !== 'none';
+      btn.style.display = isVisible ? 'none' : 'flex';
+      if (!isVisible) {
+        // Show with animation
+        btn.style.animation = 'devBtnReveal 0.5s ease';
+        playSound('buy');
+        showToast('🔧 وضع المطوّر ' + (!isVisible ? 'مُفعَّل' : 'مُغلق'));
+      } else {
+        playSound('delete');
+        showToast('🔒 وضع المطوّر مُغلق');
+      }
+    }
+  }
+});
+applyTheme();
+updateHeaderCurrency();
+updateDateDisplay();
+renderToday();
+buildThemePresets();
+buildBgPresets();
+setInterval(updateDateDisplay, 60000);
+</script>
+
+</body>
+</html>
